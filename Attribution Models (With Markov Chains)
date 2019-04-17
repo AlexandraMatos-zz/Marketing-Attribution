@@ -1,0 +1,46 @@
+setwd("/Users/alexandra/Documents/")
+
+#Install the libraries
+install.packages("ChannelAttribution")
+install.packages("ggplot2")
+install.packages("reshape")
+install.packages("dplyr")
+install.packages("plyr")
+install.packages("reshape2")
+install.packages("markovchain")
+install.packages("plotly")
+
+#Load the libraries
+library("ChannelAttribution")
+library("ggplot2")
+library("reshape")
+library("dplyr")
+library("plyr")
+library("reshape2")
+library("markovchain")
+library("plotly")
+
+data <- read.csv("/Users/alexandra/Documents/6monthpaths.csv", header=TRUE)
+head(data)
+H <- heuristic_models(data, 'path', 'conversion', var_value='conversion')
+
+M <- markov_model(data, 'path', 'conversion', var_value='conversion', order = 3)
+
+# Merges the two data frames on the "channel_name" column.
+R <- merge(H, M, by='channel_name')
+
+R2 <- R[, (colnames(R)%in%c('channel_name', 'first_touch_value', 'last_touch_value', 'linear_touch_value', 'total_conversion_value'))]
+
+colnames(R2) <- c('channel_name', 'first_touch', 'last_touch', 'linear_touch', 'markov_model')
+
+R2 <- melt(R2, id='channel_name')
+
+ggplot(R2, aes(channel_name, value, fill = variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ggtitle('TOTAL VALUE') + 
+  theme(axis.title.x = element_text(vjust = -2)) +
+  theme(axis.title.y = element_text(vjust = +2)) +
+  theme(title = element_text(size = 16)) +
+  theme(plot.title=element_text(size = 20)) +
+  ylab("")
+
